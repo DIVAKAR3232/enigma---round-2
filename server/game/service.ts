@@ -91,7 +91,6 @@ function toPublic(game: Game, settings: Settings): GameState {
     version: game.version,
     serverNow: Date.now(),
     eventName: settings.eventName,
-    highlightLetters: settings.highlightLetters,
   };
 }
 

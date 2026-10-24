@@ -48,7 +48,6 @@ model Settings {
   /// null = built-in dictionary
   activeWordListId String?
   avoidRecent      Int      @default(100)
-  highlightLetters Boolean  @default(true)
   updatedAt        DateTime @updatedAt
 }
 

@@ -18,7 +18,6 @@ const base: GameState = {
   version: 1,
   serverNow: 0,
   eventName: 'Keyboard Ball Challenge',
-  highlightLetters: true,
 };
 
 describe('Keyboard', () => {
@@ -28,11 +27,11 @@ describe('Keyboard', () => {
     expect(keys).toBe('QWERTYUIOPASDFGHJKLZXCVBNM');
   });
 
-  it('highlights only the requested letters', () => {
-    render(<Keyboard highlight={new Set(['C', 'H'])} />);
-    expect(screen.getByTestId('key-C').dataset.lit).toBe('true');
-    expect(screen.getByTestId('key-H').dataset.lit).toBe('true');
-    expect(screen.getByTestId('key-Q').dataset.lit).toBeUndefined();
+  it('never highlights the target letters', () => {
+    render(<GameStage state={base} status="RUNNING" remaining={60_000} />);
+    const keys = screen.getAllByTestId(/^key-/);
+    const styles = new Set(keys.map((k) => k.className));
+    expect(styles.size).toBe(1); // C, H, A, I, R look exactly like every other key
   });
 });
 

@@ -8,7 +8,7 @@ import { openProjectorWindow } from './OrganizerPage';
 
 const TILES = [
   { to: '/organizer', title: 'Organizer Mode', body: 'Start, pause, next word and reset. Run the game from here.', tone: 'text-neon-green' },
-  { to: '/settings', title: 'Settings', body: 'Game duration, event name, word list and letter highlighting.', tone: 'text-neon-cyan' },
+  { to: '/settings', title: 'Settings', body: 'Game duration, event name and word list.', tone: 'text-neon-cyan' },
   { to: '/words', title: 'Word Lists', body: 'Use the built-in dictionary or upload your own five-letter words.', tone: 'text-neon-yellow' },
   { to: '/players', title: 'Player Accounts', body: 'Optional. Generate player logins with temporary passwords.', tone: 'text-neon-pink' },
   { to: '/account', title: 'My Account', body: 'Change your organizer password.', tone: 'text-slate-200' },

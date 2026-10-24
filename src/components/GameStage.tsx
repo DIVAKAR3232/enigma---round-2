@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { GameState, GameStatus } from '../../shared/types';
 import { formatTime } from '../../shared/timer';
 import { Keyboard } from './Keyboard';
@@ -14,61 +14,74 @@ interface GameStageProps {
   variant?: 'full' | 'preview';
 }
 
+/*
+ * Every size is in container units (cqw / cqh = 1% of this screen's width / height),
+ * so the word and keyboard fill the available area on any projector, laptop or preview box,
+ * and grow further when the projector's control bar is hidden.
+ *
+ * Height budget: top bar ~15% · word tiles ~23% · keyboard ~51%.
+ * Width: the top keyboard row is 10.9 keys wide → 8.7cqw per key leaves a small side margin.
+ */
+const SIZES = {
+  key: 'min(8.7cqw, 16cqh)',
+  tile: 'min(10.5cqw, 21cqh)',
+  timer: 'min(8cqw, 12cqh)',
+};
+
 /**
  * The projected game screen: round, status, timer, target word and keyboard,
  * with READY and GAME OVER screens. Contains no controls.
  */
 export function GameStage({ state, status, remaining, variant = 'full' }: GameStageProps) {
   const preview = variant === 'preview';
-  const sizes = preview
-    ? { tile: 'min(5.2vw, 9vh)', key: 'min(3.1vw, 5vh)', timer: 'min(4.5vw, 8vh)', title: 'text-sm' }
-    : { tile: 'min(12vw, 17vh)', key: 'min(7.6vw, 9.2vh)', timer: 'min(10vw, 13vh)', title: 'text-[min(2.4vw,3.6vh)]' };
-  const highlight = state.highlightLetters && state.currentWord ? new Set(state.currentWord.split('')) : undefined;
+  const container: CSSProperties = { containerType: 'size' };
 
   return (
     <div
-      className={`arcade-grid relative flex h-full w-full flex-col overflow-hidden ${preview ? 'rounded-xl border border-line' : ''}`}
+      className={`arcade-grid relative h-full w-full overflow-hidden ${preview ? 'rounded-xl border border-line' : ''}`}
+      style={container}
       data-testid="game-stage"
     >
-      {/* Top bar */}
-      <div className={`flex items-center justify-between ${preview ? 'px-3 pt-2' : 'px-[3vw] pt-[2.5vh]'}`}>
-        <div className="flex flex-col gap-1">
-          <span className={`font-display font-bold uppercase tracking-[0.2em] text-neon-pink ${sizes.title}`}>
-            {state.eventName}
-          </span>
-          <span
-            className={`font-display font-bold text-slate-200 ${preview ? 'text-xs' : 'text-[min(2.8vw,4.2vh)]'}`}
-            data-testid="round"
-          >
-            ROUND <span className="text-neon-yellow">{state.round > 0 ? state.round : '–'}</span>
-          </span>
+      <div className="flex h-full w-full flex-col">
+        {/* Top bar */}
+        <div className="flex items-center justify-between" style={{ padding: '1.6cqh 2.5cqw 0' }}>
+          <div className="flex w-[30cqw] flex-col" style={{ gap: '0.6cqh' }}>
+            <span className="truncate font-display font-bold uppercase tracking-[0.2em] text-neon-pink" style={{ fontSize: '2.6cqh' }}>
+              {state.eventName}
+            </span>
+            <span className="font-display font-bold text-slate-200" style={{ fontSize: '4.2cqh' }} data-testid="round">
+              ROUND <span className="text-neon-yellow">{state.round > 0 ? state.round : '–'}</span>
+            </span>
+          </div>
+          <TimerDisplay ms={remaining} status={status} fontSize={SIZES.timer} />
+          <div className="flex w-[30cqw] justify-end">
+            <StatusBadge status={status} fontSize="3cqh" />
+          </div>
         </div>
-        <TimerDisplay ms={remaining} status={status} fontSize={sizes.timer} />
-        <StatusBadge status={status} size={preview ? 'md' : 'lg'} />
-      </div>
 
-      {/* Word + keyboard */}
-      <div className={`flex flex-1 flex-col items-center justify-evenly ${preview ? 'gap-2 py-2' : 'gap-[2vh] py-[1vh]'}`}>
-        <WordTiles word={status === 'READY' ? null : state.currentWord} tileSize={sizes.tile} />
-        <Keyboard highlight={status === 'READY' ? undefined : highlight} keySize={sizes.key} />
+        {/* Word + keyboard fill the rest */}
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-evenly">
+          <WordTiles word={status === 'READY' ? null : state.currentWord} tileSize={SIZES.tile} />
+          <Keyboard keySize={SIZES.key} />
+        </div>
       </div>
 
       {status === 'READY' && (
         <Overlay preview={preview}>
-          <div className={`font-display font-black text-neon-cyan text-glow-cyan ${preview ? 'text-4xl' : 'text-[min(14vw,20vh)]'}`}>
+          <div className="font-display font-black text-neon-cyan text-glow-cyan" style={{ fontSize: 'min(16cqw, 24cqh)' }}>
             READY
           </div>
-          <div className={`mt-[1vh] font-display text-slate-300 ${preview ? 'text-xs' : 'text-[min(2.6vw,4vh)]'}`}>
+          <div className="font-display text-slate-300" style={{ fontSize: '4cqh', marginTop: '1cqh' }}>
             {formatTime(state.durationMs)} on the clock · waiting for START
           </div>
         </Overlay>
       )}
       {status === 'OVER' && (
         <Overlay preview={preview}>
-          <div className={`font-display font-black text-neon-red text-glow-red ${preview ? 'text-3xl' : 'text-[min(12vw,18vh)]'}`}>
+          <div className="font-display font-black text-neon-red text-glow-red" style={{ fontSize: 'min(13cqw, 20cqh)' }}>
             GAME OVER
           </div>
-          <div className={`mt-[1vh] font-display text-slate-300 ${preview ? 'text-xs' : 'text-[min(2.6vw,4vh)]'}`}>
+          <div className="font-display text-slate-300" style={{ fontSize: '4cqh', marginTop: '1cqh' }}>
             Time is up · words shown: {state.round}
           </div>
         </Overlay>

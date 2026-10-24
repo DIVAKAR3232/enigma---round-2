@@ -111,15 +111,6 @@ export default function SettingsPage() {
             />
             <p className="mt-1 text-xs text-slate-500">Recently shown words are skipped while the list still has others. History carries over between participants.</p>
           </div>
-          <label className="flex cursor-pointer items-center gap-3">
-            <input
-              type="checkbox"
-              className="h-5 w-5 accent-[var(--color-neon-yellow)]"
-              checked={settings.highlightLetters}
-              onChange={(e) => setSettings({ ...settings, highlightLetters: e.target.checked })}
-            />
-            <span>Highlight the target word's letters on the on-screen keyboard</span>
-          </label>
         </Card>
 
         {msg && <Alert tone={msg.tone}>{msg.text}</Alert>}

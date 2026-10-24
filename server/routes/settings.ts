@@ -15,7 +15,6 @@ function toDto(s: Settings): SettingsDto {
     durationSec: s.durationSec,
     activeWordListId: s.activeWordListId,
     avoidRecent: s.avoidRecent,
-    highlightLetters: s.highlightLetters,
   };
 }
 
@@ -28,7 +27,6 @@ const updateSchema = z.object({
   durationSec: z.number().int().min(10, 'Minimum duration is 10 seconds').max(3600, 'Maximum duration is 60 minutes').optional(),
   activeWordListId: z.string().nullable().optional(),
   avoidRecent: z.number().int().min(0).max(1000).optional(),
-  highlightLetters: z.boolean().optional(),
 });
 
 settingsRouter.put('/settings', async (req, res) => {

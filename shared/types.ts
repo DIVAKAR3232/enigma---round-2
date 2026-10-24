@@ -17,7 +17,6 @@ export interface GameState {
   /** Server clock at the moment this snapshot was made, used to correct client clock drift. */
   serverNow: number;
   eventName: string;
-  highlightLetters: boolean;
 }
 
 export type Role = 'ORGANIZER' | 'PLAYER';
@@ -35,7 +34,6 @@ export interface SettingsDto {
   durationSec: number;
   activeWordListId: string | null;
   avoidRecent: number;
-  highlightLetters: boolean;
 }
 
 export interface WordListSummary {
