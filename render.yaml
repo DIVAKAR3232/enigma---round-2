@@ -1,0 +1,39 @@
+# Render Blueprint: one Node web service + one PostgreSQL database.
+# Render dashboard → New → Blueprint → pick this repository.
+databases:
+  - name: kbc-db
+    databaseName: kbc
+    user: kbc
+    plan: free
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: keyboard-ball-challenge
+    runtime: node
+    plan: free
+    # Dev dependencies (Vite, TypeScript, esbuild) are needed to build.
+    buildCommand: npm ci --include=dev && npm run build
+    # Applies pending Prisma migrations, then starts the server.
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22.16.0"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kbc-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # Fill in at least one way to create the first organizer (see docs/DEPLOYMENT.md):
+      # SETUP_TOKEN enables the /setup page; ADMIN_USERNAME + ADMIN_PASSWORD create the account at boot.
+      - key: SETUP_TOKEN
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

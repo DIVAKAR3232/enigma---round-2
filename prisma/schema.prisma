@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ORGANIZER
+  PLAYER
+}
+
+enum GameStatus {
+  READY
+  RUNNING
+  PAUSED
+  OVER
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  username           String    @unique
+  passwordHash       String
+  role               Role
+  displayName        String?
+  mustChangePassword Boolean   @default(false)
+  /// Bumped on password change / reset so older session cookies stop working.
+  tokenVersion       Int       @default(0)
+  organizerId        String?
+  organizer          User?     @relation("OrganizerPlayers", fields: [organizerId], references: [id], onDelete: Cascade)
+  players            User[]    @relation("OrganizerPlayers")
+  createdAt          DateTime  @default(now())
+  lastLoginAt        DateTime?
+  game               Game?
+  settings           Settings?
+  wordLists          WordList[]
+
+  @@index([organizerId])
+}
+
+model Settings {
+  userId           String   @id
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventName        String   @default("Keyboard Ball Challenge")
+  durationSec      Int      @default(120)
+  /// null = built-in dictionary
+  activeWordListId String?
+  avoidRecent      Int      @default(100)
+  highlightLetters Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
+
+model WordList {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  words     String[]
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+
+model Game {
+  ownerId     String     @id
+  owner       User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  status      GameStatus @default(READY)
+  durationMs  Int
+  remainingMs Int
+  endsAt      DateTime?
+  currentWord String?
+  round       Int        @default(0)
+  /// Oldest first. Used to avoid repeating words across rounds and participants.
+  recentWords String[]   @default([])
+  version     Int        @default(0)
+  updatedAt   DateTime   @updatedAt
+}
